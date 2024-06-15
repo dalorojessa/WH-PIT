@@ -1,0 +1,23 @@
+table {
+    border-collapse: collapse;
+    max-width: 900px;
+    width: 100%;
+    margin: 2rem auto;
+}
+
+table th, table td{
+    padding: 20px; /* Increase padding to make rows wider */
+    text-align: center;
+    border: 1px solid #ddd;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.table th {
+    background-color: #f2f2f2;
+  }
+
+.table td.button-cell {
+    border-right: none; /* Remove right border for cells containing Button components */
+    border-top: none; /* Remove top border for cells containing Button components */
+    border-bottom: none; /* Remove bottom border for cells containing Button components */
+}

@@ -1,0 +1,88 @@
+/* create_staff.css */
+
+.table-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+}
+
+form {
+    display: flex;
+    flex-wrap: wrap;
+    width: 600px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    width: calc(50% - 20px); /* Adjusted for padding */
+    padding: 10px;
+}
+
+.input-container-full {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+}
+
+input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input::placeholder {
+    color: #999;
+}
+
+.button-save {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.button-next {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.button-next button {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #fff; /* White background */
+    color: #000000; 
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007BFF;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button-next button:hover {
+    background-color: #f0f0f0; /* Light gray background on hover */
+  }
+
+button:hover {
+    background-color: #0056b3;
+}
