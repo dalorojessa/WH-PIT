@@ -23,7 +23,6 @@ const List_Of_Pa = () => {
       }
 
       setListOfPa(data);
-      console.log(data); // Check if data is fetched correctly
     } catch (error) {
       console.error('Error fetching patient appointments:', error.message);
     }
@@ -31,15 +30,47 @@ const List_Of_Pa = () => {
 
   const handleRecommendationChange = async (appointmentId, newValue) => {
     try {
-      // Update the recommendation in the database
-      const { error } = await supabase
+      // Update recommendation in patient_appointment table
+      const { error: updateError } = await supabase
         .from('patient_appointment')
-        .update({ recommended_to: newValue }) // Specify the new value for the recommended_to column
-        .eq('appointment_num', appointmentId); // Filter to update the row where appointment_num equals appointmentId
+        .update({ recommended_to: newValue })
+        .eq('appointment_num', appointmentId);
 
-      if (error) {
-        console.error('Error updating recommendation:', error.message);
-        return;
+      if (updateError) {
+        console.error('Error updating recommendation:', updateError.message);
+        throw updateError;
+      }
+
+      // Delete existing records in both in_patient and out_patient tables
+      const { error: deleteError1 } = await supabase
+        .from('in_patient')
+        .delete()
+        .eq('appointment_num', appointmentId);
+
+      if (deleteError1) {
+        console.error('Error deleting from in_patient:', deleteError1.message);
+        throw deleteError1;
+      }
+
+      const { error: deleteError2 } = await supabase
+        .from('out_patient')
+        .delete()
+        .eq('appointment_num', appointmentId);
+
+      if (deleteError2) {
+        console.error('Error deleting from out_patient:', deleteError2.message);
+        throw deleteError2;
+      }
+
+      // Insert new record based on the updated recommendation
+      const table = newValue === 'In-patient' ? 'in_patient' : 'out_patient';
+      const { error: insertError } = await supabase
+        .from(table)
+        .insert({ appointment_num: appointmentId });
+
+      if (insertError) {
+        console.error(`Error inserting into ${table}:`, insertError.message);
+        throw insertError;
       }
 
       // Update the state to reflect the new recommendation value
@@ -47,7 +78,7 @@ const List_Of_Pa = () => {
         item.appointment_num === appointmentId ? { ...item, recommended_to: newValue } : item
       ));
     } catch (error) {
-      console.error('Error updating recommendation:', error.message);
+      console.error('Error handling recommendation change:', error.message);
     }
   };
 
@@ -84,7 +115,7 @@ const List_Of_Pa = () => {
                 </Select>
               </td>
               <td className="button-cell">
-                <Link to="/patient_page">
+                <Link to={`/patient_page?appointment_num=${appointment.appointment_num}&recommended_to=${appointment.recommended_to}`}>
                   <Button
                     variant="contained"
                     color="primary"

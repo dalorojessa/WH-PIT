@@ -9,6 +9,7 @@ import Create_Staff from '../Page/Create_Staff';
 import Book_Appointment from '../Page/Book_Appointment';
 import Patient_Registration from '../Page/Patient_Registration';
 import FormsPage from '../Page/Forms_Page';
+import NextOfKinPage from '../Page/Next-of-Kin';
 
 const routes = [
   {
@@ -50,6 +51,10 @@ const routes = [
   {
     path: "/patient-registration",
     element: <Patient_Registration />
+  },
+  {
+    path: "/next-of-kin",
+    element: <NextOfKinPage/>
   }
 ];
 

@@ -92,8 +92,7 @@ export default function BookAppointmentPage() {
     staff_num: '',
     clinic_num: '',
     exam_room: '',
-    date_and_time: '2024-06-15T10:00:00', // Fixed date and time
-    recommended_to: null // Add this line
+    recommended_to: null
   });
 
   const [error, setError] = useState(null);
@@ -108,38 +107,47 @@ export default function BookAppointmentPage() {
   async function addPatientAppointment(event) {
     event.preventDefault();
     setError(null); // Clear previous errors
-  
+
     // Basic validation
     if (!patientAppointment.staff_num || !patientAppointment.clinic_num || !patientAppointment.exam_room) {
       setError("Please fill in all required fields.");
       return;
     }
-  
+
     // Check if recommended_to is neither null nor a valid option
     if (patientAppointment.recommended_to !== null && !['In-patient', 'Out-patient'].includes(patientAppointment.recommended_to)) {
       setError("Recommended to must be 'In-patient' or 'Out-patient'.");
       return;
     }
-  
+
+    // Generate the current date and time
+    const currentDateAndTime = new Date().toISOString();
+
     // Create the appointment object
     const appointmentData = {
       staff_num: patientAppointment.staff_num,
       clinic_num: patientAppointment.clinic_num,
       exam_room: patientAppointment.exam_room,
-      date_and_time: patientAppointment.date_and_time,
+      date_and_time: currentDateAndTime,
       recommended_to: patientAppointment.recommended_to
     };
-  
+
     const { data, error } = await supabase
       .from('patient_appointment')
       .insert(appointmentData);
-  
+
     if (error) {
       console.error("Error inserting data:", error);
       setError(`Failed to save patient appointment details. Error: ${error.message}`);
     } else {
       console.log("Patient appointment added:", data);
-      // Optionally, reset form or give user feedback
+      alert("Appointment successfully added!");
+      setPatientAppointment({
+        staff_num: '',
+        clinic_num: '',
+        exam_room: '',
+        recommended_to: null
+      });
     }
   }  
 
@@ -238,6 +246,7 @@ export default function BookAppointmentPage() {
                         name='staff_num'
                         margin="normal"
                         sx={{ m: 1 }}
+                        value={patientAppointment.staff_num}
                         onChange={handleChange}
                       />
                       <TextField
@@ -246,15 +255,7 @@ export default function BookAppointmentPage() {
                         name='clinic_num'
                         margin="normal"
                         sx={{ m: 1 }}
-                        onChange={handleChange}
-                      />
-                      <TextField
-                        label="Date and Time"
-                        variant="outlined"
-                        name='date_and_time'
-                        margin="normal"
-                        value={patientAppointment.date_and_time}
-                        sx={{ m: 1 }}
+                        value={patientAppointment.clinic_num}
                         onChange={handleChange}
                       />
                       <TextField
@@ -263,6 +264,7 @@ export default function BookAppointmentPage() {
                         name='exam_room'
                         margin="normal"
                         sx={{ m: 1 }}
+                        value={patientAppointment.exam_room}
                         onChange={handleChange}
                       />
                     </Box>

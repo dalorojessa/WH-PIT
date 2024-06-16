@@ -1,162 +1,228 @@
-import { useEffect, useState } from "react";
+import React, { useState } from 'react';
+import { Box, TextField, Button } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
 import supabase from '../Services/Supabase';
-import { Box, Select, MenuItem, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-
-
 
 const Patient_Page = () => {
-    const [patient, setPatient] = useState([]);
+  const [patientDetails, setPatientDetails] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    tel_number: '',
+    date_of_birth: '',
+    sex: '',
+    marital_status: '',
+    hospital_date_registered: ''
+  });
 
-    const [patients, setPatients]=useState({
-        f_name:'',
-        l_name:'',
-        address:'',
-        tel_number:'',
-        date_of_birth:'',
-        sex:'',
-        marital_status:'',
-        hospital_date_registered:''
-      })
-  
-    useEffect(() => {
-      fetchPatient();
-    }, []);
-  
-    async function fetchPatient() {
-      try {
-        const { data, error } = await supabase
-          .from('patient')
-          .select('*');
-  
-        if (error) {
-          console.error('Error fetching patient:', error.message);
-          return;
-        }
-  
-        setPatient(data);
-        console.log(data); // Check if data is fetched correctly
-      } catch (error) {
-        console.error('Error fetching patient', error.message);
-      }
-    }
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryParams = new URLSearchParams(location.search);
+  const appointmentNum = queryParams.get('appointment_num');
+  const recommendedTo = queryParams.get('recommended_to');
 
-    function handleChange(event){
-        setPatients(prevFormData=>{
-            return{
-                ...prevFormData,
-                [event.target.name]:event.target.value
-            }
-        })
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPatientDetails(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
-    async function addPatient() {
-        await supabase  
+  const handleSave = async () => {
+    try {
+      // Insert patient details and retrieve patient_num
+      const { data: patientData, error: insertError } = await supabase
         .from('patient')
-        .insert({ f_name: patients.f_name, 
-            l_name: patients.l_name,
-            address: patients.address,
-            tel_number: patients.tel_number,
-            date_of_birth: patients.date_of_birth,
-            sex: patients.sex,
-            marital_status: patients.marital_status,
-            hospital_date_registered: patients.hospital_date_registered})
-        }
-    return (
-        <Box sx={{ flexGrow: 1, p: 3 }} className="table-container">
-            <form onSubmit={addPatient}>
-                <input 
-                    type="text" 
-                    placeholder="First Name"
-                    name='f_name'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Last Name"
-                    name='l_name'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Address"
-                    name='address'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Telephone Number"
-                    name='tel_number'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Date of Birth"
-                    name='date_of_birth'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Sex"
-                    name='sex'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Marital Status"
-                    name='marital_status'
-                    onChange={handleChange}
-                />
-                <input 
-                    type="text" 
-                    placeholder="Hospital Date Registered"
-                    name='hospital_date_registered'
-                    onChange={handleChange}
-                />
-                <button type='submit'>Save</button>
-            </form>
-
-
-
-
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Patient ID</th>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                  <th>Address</th>
-                  <th>Telephone Number</th>
-                  <th>Date of Birth</th>
-                  <th>Sex</th>
-                  <th>Marital Status</th>
-                  <th>Hospital Date Registered</th>
-                </tr>
-              </thead>
+        .insert({
+          f_name: patientDetails.firstName,
+          l_name: patientDetails.lastName,
+          address: patientDetails.address,
+          tel_number: patientDetails.tel_number,
+          date_of_birth: patientDetails.date_of_birth,
+          sex: patientDetails.sex,
+          marital_status: patientDetails.marital_status,
+          hospital_date_registered: patientDetails.hospital_date_registered
+        })
+        .select('patient_num'); // Use 'select' to return only patient_num
     
-              <tbody>
-                {patient.map((patients) => (
-                  <tr key={patients.patient_num}>
-                    <td>{patients.patient_num}</td>
-                    <td>{patients.f_name}</td>
-                    <td>{patients.l_name}</td>
-                    <td>{patients.address}</td>
-                    <td>{patients.tel_number}</td>
-                    <td>{patients.date_of_birth}</td>
-                    <td>{patients.sex}</td>
-                    <td>{patients.marital_status}</td>
-                    <td>{patients.hospital_date_registered}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Button
-                variant="contained"
-                color="primary"
-                >
-                Save
-            </Button>
-        </Box>
-      );
+      if (insertError) {
+        console.error('Error saving patient details:', insertError.message);
+        throw new Error('Error saving patient details');
+      }
+    
+      // Check if patientData and patient_num are valid
+      const patientNum = patientData[0]?.patient_num;
+      if (!patientNum) {
+        console.error('Generated patient number is missing or invalid:', patientData);
+        throw new Error('Generated patient number is missing or invalid');
+      }
+
+      console.log('Generated patient number:', patientNum);
+      console.log('Recommended to:', recommendedTo);
+
+      // Check for existing appointment_num in both tables
+      const { data: inPatientData, error: inPatientError } = await supabase
+        .from('in_patient')
+        .select('appointment_num')
+        .eq('appointment_num', appointmentNum);
+
+      const { data: outPatientData, error: outPatientError } = await supabase
+        .from('out_patient')
+        .select('appointment_num')
+        .eq('appointment_num', appointmentNum);
+
+      if (inPatientError || outPatientError) {
+        console.error('Error checking existing appointment:', inPatientError || outPatientError);
+        throw new Error('Error checking existing appointment');
+      }
+  
+      // Insert into the correct table based on recommendedTo
+      if (recommendedTo === "Out-patient") {
+        await insertIntoOutPatient(patientNum, appointmentNum);
+      } else if (recommendedTo === "In-patient") {
+        await insertIntoInPatient(patientNum, appointmentNum);
+      }
+
+      // Navigate to NextOfKinPage with patient_num
+      navigate(`/next-of-kin?patient_num=${patientNum}`);
+  
+    } catch (error) {
+      console.error('Error handling save:', error.message);
+      // Handle error gracefully, e.g., show error message to user
     }
-export default Patient_Page
+  };
+
+  const insertIntoOutPatient = async (patientNum, appointmentNum) => {
+    try {
+      const { data, error } = await supabase
+        .from('out_patient')
+        .insert({
+          patient_num: patientNum,
+          appointment_num: appointmentNum,
+        })
+        .select();
+  
+      if (error) {
+        console.error('Error inserting into out_patient:', error.message);
+        throw new Error('Error inserting into out_patient');
+      }
+  
+      console.log('Successfully inserted into out_patient:', data);
+    } catch (error) {
+      console.error('Error inserting into out_patient:', error.message);
+      throw error;
+    }
+  };
+  
+  const insertIntoInPatient = async (patientNum, appointmentNum) => {
+    try {
+      const { data, error } = await supabase
+        .from('in_patient')
+        .insert({
+          patient_num: patientNum,
+          appointment_num: appointmentNum,
+        })
+        .select();
+  
+      if (error) {
+        console.error('Error inserting into in_patient:', error.message);
+        throw new Error('Error inserting into in_patient');
+      }
+  
+      console.log('Successfully inserted into in_patient:', data);
+    } catch (error) {
+      console.error('Error inserting into in_patient:', error.message);
+      throw error;
+    }
+  };
+
+  return (
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <h2>Patient Page</h2>
+      <form>
+        <TextField
+          label="First Name"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="firstName"
+          value={patientDetails.firstName}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Last Name"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="lastName"
+          value={patientDetails.lastName}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Address"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="address"
+          value={patientDetails.address}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Telephone Number"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="tel_number"
+          value={patientDetails.tel_number}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Date of Birth"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="date_of_birth"
+          value={patientDetails.date_of_birth}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Sex"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="sex"
+          value={patientDetails.sex}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Marital Status"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="marital_status"
+          value={patientDetails.marital_status}
+          onChange={handleInputChange}
+        />
+        <TextField
+          label="Hospital Date Registered"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          name="hospital_date_registered"
+          value={patientDetails.hospital_date_registered}
+          onChange={handleInputChange}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+        >
+          Next
+        </Button>
+      </form>
+    </Box>
+  );
+};
+
+export default Patient_Page;
