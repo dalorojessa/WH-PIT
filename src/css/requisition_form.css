@@ -1,0 +1,47 @@
+/* requisition_form.css */
+
+.form-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-container form {
+    display: grid;
+    gap: 16px;
+  }
+  
+  .form-container form .MuiTextField-root {
+    width: 100%;
+  }
+  
+  .form-container form .MuiButton-root {
+    justify-self: center;
+  }
+  
+  .result-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .result-container .MuiTypography-root {
+    margin-bottom: 10px;
+  }
+  
+  .result-container .MuiTypography-gutterBottom {
+    margin-bottom: 5px;
+  }
+  
+  .result-container strong {
+    font-weight: 600;
+    margin-right: 8px;
+  }
+  
